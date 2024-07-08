@@ -1,4 +1,5 @@
 import 'package:api_calls_test1/Addnewtask.dart';
+import 'package:api_calls_test1/EditTask.dart';
 import 'package:api_calls_test1/neumorphism.dart';
 import 'package:flutter/material.dart';
 
@@ -12,18 +13,28 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage>
     with SingleTickerProviderStateMixin {
   late AnimationController controller;
-  List<int> selectedTaskIndex = [];
-  List<String> tasks = [];
 
+  List<int> selectedTaskIndex = []; /* selct the task indexs like 0,1,2,3 */
+  List<String> tasks =
+      []; /* selct the task name like [do homework,do assignment] */
+  List<String> categories = ["Work", "Personal", "Shopping"];
+  String _selectedCategories = "All";
   @override
   void initState() {
     super.initState();
   }
 
   /* ADD NEW TASK TO THE HOME PAGE */
-  void _addNewTask(String task) {
+  void _addNewTask(String task, DateTime? duedate, String category) {
     setState(() {
       tasks.add(task);
+    });
+  }
+
+/* EDIT PREVIOUS TASK */
+  void _editPrevioustask(String edittasks, int index) {
+    setState(() {
+      tasks[index] = edittasks;
     });
   }
 
@@ -220,61 +231,67 @@ class _HomepageState extends State<Homepage>
                   key: Key(tasks[index]),
                   direction: DismissDirection.startToEnd,
                   onDismissed: (direction) {
-                    _deleteTask(index);
+                    _deleteTask(
+                        index); /* WHEN YOU SLIDE TO THE LEFT THE TASK OF INDEX DELETES */
                   },
                   background: Container(
                     color: Colors.red,
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.only(left: 20.0),
+                    /* padding for the placement of delete icon */
                     child: const Icon(
                       Icons.delete,
                       color: Colors.white,
                     ),
                   ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.grey.shade400,
-                    ),
-                    height: 70,
-                    width: double.infinity,
-                    child: ListTile(
-                      leading: Checkbox(
-                        value: selectedTaskIndex.contains(index),
-                        onChanged: (bool? value) {
-                          setState(
-                            () {
-                              if (value == true) {
-                                selectedTaskIndex.add(index);
-                              } else {
-                                selectedTaskIndex.remove(index);
-                              }
-                            },
-                          );
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.grey.shade400,
+                      ),
+                      height: 70,
+                      width: double.infinity,
+                      child: ListTile(
+                        leading: Checkbox(
+                          value: selectedTaskIndex.contains(index),
+                          onChanged: (bool? value) {
+                            setState(
+                              () {
+                                if (value == true) {
+                                  selectedTaskIndex.add(index);
+                                } else {
+                                  selectedTaskIndex.remove(index);
+                                }
+                              },
+                            );
+                          },
+                        ),
+                        title: Text(
+                          tasks[index],
+                          style:
+                              /* TO CANCEL THE TEXT ON THE TO-DO LIST */
+                              TextStyle(
+                                  decoration: selectedTaskIndex.contains(index)
+                                      ? TextDecoration.lineThrough
+                                      : TextDecoration.none,
+                                  color: selectedTaskIndex.contains(index)
+                                      ? Colors.grey.shade600
+                                      : Colors.black),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onLongPress: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Edittask(
+                                        onEditTask: (edittasks) =>
+                                            _editPrevioustask(edittasks, index),
+                                        intialTask: tasks[index],
+                                      )));
                         },
                       ),
-                      title: Text(
-                        tasks[index],
-                        style:
-                            /* TO CANCEL THE TEXT ON THE TO-DO LIST */
-                            TextStyle(
-                                decoration: selectedTaskIndex.contains(index)
-                                    ? TextDecoration.lineThrough
-                                    : TextDecoration.none,
-                                color: selectedTaskIndex.contains(index)
-                                    ? Colors.grey.shade600
-                                    : Colors.black),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      onTap: () {
-                        setState(() {
-                          if (selectedTaskIndex.contains(index)) {
-                            selectedTaskIndex.add(index);
-                          } else {
-                            selectedTaskIndex.remove(index);
-                          }
-                        });
-                      },
                     ),
                   ),
                 );
