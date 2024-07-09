@@ -1,6 +1,7 @@
 import 'package:api_calls_test1/Addnewtask.dart';
 import 'package:api_calls_test1/EditTask.dart';
 import 'package:api_calls_test1/neumorphism.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Homepage extends StatefulWidget {
@@ -15,32 +16,39 @@ class _HomepageState extends State<Homepage>
   late AnimationController controller;
 
   List<int> selectedTaskIndex = []; /* selct the task indexs like 0,1,2,3 */
-  List<String> tasks =
+  List<Map<String, dynamic>> tasks =
       []; /* selct the task name like [do homework,do assignment] */
-  List<String> categories = ["Work", "Personal", "Shopping"];
-  String _selectedCategories = "All";
+
+  List<String> categories = ["All", 'Work', 'Personal', 'Shopping'];
+  String selectedcategory = "All";
   @override
   void initState() {
     super.initState();
   }
 
   /* ADD NEW TASK TO THE HOME PAGE */
-  void _addNewTask(String task, DateTime? duedate, String category) {
+  void _addNewTask(
+      String task, DateTime? startdate, DateTime? enddate, String category) {
     setState(() {
-      tasks.add(task);
+      tasks.add({
+        'title': task,
+        'startdate': startdate,
+        'enddate': enddate,
+        'category': category
+      });
     });
   }
 
 /* EDIT PREVIOUS TASK */
   void _editPrevioustask(String edittasks, int index) {
     setState(() {
-      tasks[index] = edittasks;
+      tasks[index]['title'] = edittasks;
     });
   }
 
   /* DELETE ADDED TASK IN THE HOME PAGE */
   void _deleteTask(int index) {
-    String deletedTask = tasks[index];
+    Map<String, dynamic> deletedTask = tasks[index];
     setState(() {
       tasks.removeAt(index);
     });
@@ -62,8 +70,19 @@ class _HomepageState extends State<Homepage>
     );
   }
 
+  List<Map<String, dynamic>> _filteredTask() {
+    if (selectedcategory == "All") {
+      return tasks;
+    } else {
+      return tasks
+          .where((task) => task[categories] == selectedcategory)
+          .toList();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    List<Map<String, dynamic>> filtedtask = _filteredTask();
     return Scaffold(
       backgroundColor: const Color.fromRGBO(248, 250, 255, 2),
       appBar: AppBar(
@@ -194,6 +213,23 @@ class _HomepageState extends State<Homepage>
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10),
+            child: Wrap(
+              spacing: 8.0,
+              children: categories.map((categories) {
+                return ChoiceChip(
+                  label: Text(categories),
+                  selected: selectedcategory == Category,
+                  onSelected: (bool selected) {
+                    setState(() {
+                      selectedcategory = selected ? categories : "All";
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+          ),
           const Padding(
             padding: EdgeInsets.only(left: 10.0, right: 10),
             child: Neumorphism(
@@ -225,10 +261,10 @@ class _HomepageState extends State<Homepage>
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: tasks.length,
+              itemCount: filtedtask.length,
               itemBuilder: (BuildContext context, int index) {
                 return Dismissible(
-                  key: Key(tasks[index]),
+                  key: Key(filtedtask[index]['title']),
                   direction: DismissDirection.startToEnd,
                   onDismissed: (direction) {
                     _deleteTask(
@@ -269,7 +305,7 @@ class _HomepageState extends State<Homepage>
                           },
                         ),
                         title: Text(
-                          tasks[index],
+                          filtedtask[index]['title'],
                           style:
                               /* TO CANCEL THE TEXT ON THE TO-DO LIST */
                               TextStyle(
@@ -279,7 +315,17 @@ class _HomepageState extends State<Homepage>
                                   color: selectedTaskIndex.contains(index)
                                       ? Colors.grey.shade600
                                       : Colors.black),
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Row(
+                          children: [
+                            Text(
+                                "Start Date: ${filtedtask[index]['startdate'] != null ? filtedtask[index]['startdate'].toString().split(" ")[0] : "N/A"}\t"),
+                            Text(
+                                "end Date:${filtedtask[index]['enddate'] != null ? filtedtask[index]['enddate'].toString().split(" ")[0] : "N/A"}"),
+                            Text(" Category: ${filtedtask[index]['category']}"),
+                          ],
                         ),
                         onLongPress: () {
                           Navigator.push(
@@ -288,7 +334,7 @@ class _HomepageState extends State<Homepage>
                                   builder: (context) => Edittask(
                                         onEditTask: (edittasks) =>
                                             _editPrevioustask(edittasks, index),
-                                        intialTask: tasks[index],
+                                        intialTask: tasks[index]['title'],
                                       )));
                         },
                       ),

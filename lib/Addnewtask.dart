@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class Addnewtask extends StatefulWidget {
-  final Function(String, DateTime?, String) onTaskAdded;
+  final Function(String, DateTime?, DateTime?, String) onTaskAdded;
   const Addnewtask({
-    Key? key,
+    super.key,
     required this.onTaskAdded,
-  }) : super(key: key);
+  });
 
   @override
   State<Addnewtask> createState() => _AddnewtaskState();
@@ -16,7 +16,8 @@ class _AddnewtaskState extends State<Addnewtask> {
   final TextEditingController _startdatecontroller = TextEditingController();
   final TextEditingController _enddatecontroller = TextEditingController();
 
-  DateTime? _dueDate;
+  DateTime? startDate;
+  DateTime? endDate;
 
   String _selectedCategory = "Work";
 
@@ -69,7 +70,7 @@ class _AddnewtaskState extends State<Addnewtask> {
                     ),
                     readOnly: true,
                     onTap: () {
-                      _selectedDate();
+                      _selectedDate(_startdatecontroller, true);
                     },
                   ),
                 ),
@@ -90,7 +91,7 @@ class _AddnewtaskState extends State<Addnewtask> {
                     ),
                     readOnly: true,
                     onTap: () {
-                      _selectedDate();
+                      _selectedDate(_enddatecontroller, false);
                     },
                   ),
                 ),
@@ -123,7 +124,7 @@ class _AddnewtaskState extends State<Addnewtask> {
         onPressed: () {
           String newtask = _textcontroller.text.trim();
           if (newtask.isNotEmpty) {
-            widget.onTaskAdded(newtask, _dueDate, _selectedCategory);
+            widget.onTaskAdded(newtask, startDate, endDate, _selectedCategory);
             Navigator.pop(context);
           }
         },
@@ -148,7 +149,8 @@ class _AddnewtaskState extends State<Addnewtask> {
   }
 
   /* CODE FOR THE USER TO SELCECT A DATE */
-  Future<void> _selectedDate() async {
+  Future<void> _selectedDate(
+      TextEditingController controller, bool isStartDate) async {
     DateTime? _picked = await showDatePicker(
         context: context,
         firstDate: DateTime(2000),
@@ -158,6 +160,11 @@ class _AddnewtaskState extends State<Addnewtask> {
     if (_picked != null) {
       setState(() {
         _startdatecontroller.text = _picked.toString().split(" ")[0];
+        if (isStartDate) {
+          startDate = _picked;
+        } else {
+          endDate = _picked;
+        }
       });
     }
   }
