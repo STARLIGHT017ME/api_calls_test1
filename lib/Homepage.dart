@@ -75,9 +75,12 @@ class _HomepageState extends State<Homepage>
       return tasks;
     } else {
       return tasks
-          .where((task) => task[categories] == selectedcategory)
+          .where((task) => task['category'] == selectedcategory)
           .toList();
     }
+    /*  return tasks
+          .where((task) => task["category"] == selectedcategory)
+          .toList(); */
   }
 
   @override
