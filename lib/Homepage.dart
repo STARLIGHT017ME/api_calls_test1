@@ -1,6 +1,6 @@
 import 'package:api_calls_test1/Addnewtask.dart';
 import 'package:api_calls_test1/EditTask.dart';
-import 'package:api_calls_test1/neumorphism.dart';
+import 'package:api_calls_test1/circularprogress.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -21,9 +21,12 @@ class _HomepageState extends State<Homepage>
 
   List<String> categories = ["All", 'Work', 'Personal', 'Shopping'];
   String selectedcategory = "All";
+  double progress = 0.0;
   @override
   void initState() {
     super.initState();
+    controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
   }
 
   /* ADD NEW TASK TO THE HOME PAGE */
@@ -36,6 +39,7 @@ class _HomepageState extends State<Homepage>
         'enddate': enddate,
         'category': category
       });
+      _updatedprogress();
     });
   }
 
@@ -51,6 +55,8 @@ class _HomepageState extends State<Homepage>
     Map<String, dynamic> deletedTask = tasks[index];
     setState(() {
       tasks.removeAt(index);
+      selectedTaskIndex.remove(index);
+      _updatedprogress();
     });
 
     /* AFTER TASK IS DELETED 
@@ -63,11 +69,20 @@ class _HomepageState extends State<Homepage>
           onPressed: () {
             setState(() {
               tasks.insert(index, deletedTask);
+              _updatedprogress();
             });
           },
         ),
       ),
     );
+  }
+
+  void _updatedprogress() {
+    setState(() {
+      progress =
+          tasks.isNotEmpty ? selectedTaskIndex.length / tasks.length : 0.0;
+      controller.forward(from: 0.0);
+    });
   }
 
   List<Map<String, dynamic>> _filteredTask() {
@@ -78,9 +93,6 @@ class _HomepageState extends State<Homepage>
           .where((task) => task['category'] == selectedcategory)
           .toList();
     }
-    /*  return tasks
-          .where((task) => task["category"] == selectedcategory)
-          .toList(); */
   }
 
   @override
@@ -186,15 +198,6 @@ class _HomepageState extends State<Homepage>
       body: Column(
         children: [
           /* BODY HEADER */
-          const Center(
-            child: Text(
-              "What's Up , Joy! ",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold),
-            ),
-          ),
 
           /*  categories of tasks */
           const Padding(
@@ -233,12 +236,10 @@ class _HomepageState extends State<Homepage>
               }).toList(),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.only(left: 10.0, right: 10),
-            child: Neumorphism(
-              width: double.infinity,
-              text: '',
-              height: 250,
+          Expanded(
+            child: Circularprogress(
+              progress: progress,
+              color: Colors.green,
             ),
           ),
 
@@ -253,7 +254,7 @@ class _HomepageState extends State<Homepage>
               child: Padding(
                 padding: EdgeInsets.only(left: 10.0),
                 child: Text(
-                  "Today Tasks",
+                  "Today's Tasks",
                   style: TextStyle(
                     color: Colors.grey,
                     fontSize: 15,
@@ -303,6 +304,7 @@ class _HomepageState extends State<Homepage>
                                 } else {
                                   selectedTaskIndex.remove(index);
                                 }
+                                _updatedprogress();
                               },
                             );
                           },
@@ -327,7 +329,6 @@ class _HomepageState extends State<Homepage>
                                 "Start Date: ${filtedtask[index]['startdate'] != null ? filtedtask[index]['startdate'].toString().split(" ")[0] : "N/A"}\t"),
                             Text(
                                 "end Date:${filtedtask[index]['enddate'] != null ? filtedtask[index]['enddate'].toString().split(" ")[0] : "N/A"}"),
-                            Text(" Category: ${filtedtask[index]['category']}"),
                           ],
                         ),
                         onLongPress: () {

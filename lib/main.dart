@@ -2,7 +2,7 @@ import 'package:api_calls_test1/Homepage.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
